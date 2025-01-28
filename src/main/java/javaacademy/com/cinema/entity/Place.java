@@ -1,0 +1,13 @@
+package javaacademy.com.cinema.entity;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Place {
+    private String id;
+    private String name;
+}
