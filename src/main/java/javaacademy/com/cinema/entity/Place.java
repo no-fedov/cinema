@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Place {
-    private String id;
+    private Integer id;
     private String name;
 }
