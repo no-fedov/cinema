@@ -1,5 +1,6 @@
 package javaacademy.com.cinema.repository;
 
+import javaacademy.com.cinema.entity.Movie;
 import javaacademy.com.cinema.entity.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -8,6 +9,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -24,6 +27,33 @@ public class SessionRepository {
         return currentSession;
     }
 
+    public Session save(final Session newSession) {
+        Integer movieId = newSession.getMovie().getId();
+        String sql = "insert into session (movie_id, price, datetime) values (?, ?, ?) returning id";
+        Integer sessionId = jdbcTemplate.queryForObject(sql, Integer.class,
+                movieId,
+                newSession.getPrice(),
+                newSession.getDateTime());
+        newSession.setId(sessionId);
+        return newSession;
+    }
+
+    public List<Session> findAll() {
+        String sql = """
+                select s.id as session_id,
+                	s.price,
+                	s.datetime,
+                	m.id as movie_id,
+                	m.name as movie_name,
+                	m.description as movie_description
+                from session s
+                left join movie m on m.id = s.movie_id;
+                """;
+        List<Session> sessions = jdbcTemplate.query(sql, this::mapToSessionForList);
+        log.info("Найдены сессии: {}", sessions);
+        return sessions;
+    }
+
     @SneakyThrows
     private Session mapToSession(ResultSet rs, int rowNum) {
         Session session = new Session();
@@ -31,6 +61,23 @@ public class SessionRepository {
         session.setPrice(rs.getBigDecimal("price"));
         movieRepository.findById(rs.getInt("movie_id")).ifPresent(session::setMovie);
         session.setDateTime(rs.getTimestamp("datetime").toLocalDateTime());
+        return session;
+    }
+
+    @SneakyThrows
+    private Session mapToSessionForList(ResultSet rs, int rowNum) {
+        Session session = new Session();
+        session.setId(rs.getInt("session_id"));
+        session.setPrice(rs.getBigDecimal("price"));
+        session.setDateTime(rs.getTimestamp("datetime").toLocalDateTime());
+        String movieId = rs.getString("movie_id");
+        if (Objects.nonNull(movieId)) {
+            Movie movie = new Movie();
+            movie.setId(Integer.parseInt(movieId));
+            movie.setName(rs.getString("movie_name"));
+            movie.setDescription(rs.getString("movie_description"));
+            session.setMovie(movie);
+        }
         return session;
     }
 }
