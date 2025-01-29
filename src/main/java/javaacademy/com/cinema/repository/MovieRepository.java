@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -21,6 +22,21 @@ public class MovieRepository {
         Optional<Movie> currentMovie = jdbcTemplate.query(sql, this::mapToMovie, id).stream().findFirst();
         log.info("Обработан запрос {}, где id = {}. Найдено: {}", sql, id, currentMovie);
         return currentMovie;
+    }
+
+    public Movie save(final Movie newMovie) {
+        String sql = "insert into movie (name, description) values(?, ?) returning id";
+        Integer id = jdbcTemplate.queryForObject(sql, Integer.class, newMovie.getName(), newMovie.getDescription());
+        newMovie.setId(id);
+        log.info("Сохранен новый фильм: {}", newMovie);
+        return newMovie;
+    }
+
+    public List<Movie> findAll() {
+        String sql = "select * from movie";
+        List<Movie> allMovies = jdbcTemplate.query(sql, this::mapToMovie);
+        log.info("Найдены фильмы: {}", allMovies);
+        return allMovies;
     }
 
     @SneakyThrows
