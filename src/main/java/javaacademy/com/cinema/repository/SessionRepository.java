@@ -17,39 +17,54 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class SessionRepository {
+
+    private static final String SESSION_BY_ID_QUERY = "select * from session where id = ?";
+    private static final String SAVE_SESSION = """
+                insert into session (movie_id, price, datetime)
+                values (?, ?, ?) returning id
+            """;
+    private static final String ALL_SESSION_QUERY = """
+            select s.id as session_id,
+            	s.price,
+            	s.datetime,
+            	m.id as movie_id,
+            	m.name as movie_name,
+            	m.description as movie_description
+            from session s
+                left join movie m on m.id = s.movie_id;
+            """;
+
     private final JdbcTemplate jdbcTemplate;
     private final MovieRepository movieRepository;
 
     public Optional<Session> findById(Integer id) {
-        String sql = "select * from session where id = ?";
-        Optional<Session> currentSession = jdbcTemplate.query(sql, this::mapToSession, id).stream().findFirst();
-        log.info("Обработан запрос {}, где id = {}. Найдено: {}", sql, id, currentSession);
+        Optional<Session> currentSession = jdbcTemplate.query(
+                SESSION_BY_ID_QUERY,
+                this::mapToSession,
+                id
+        ).stream().findFirst();
+        log.info("Обработан запрос {}, где id = {}. Найдено: {}", SESSION_BY_ID_QUERY, id, currentSession);
         return currentSession;
     }
 
     public Session save(final Session newSession) {
         Integer movieId = newSession.getMovie().getId();
-        String sql = "insert into session (movie_id, price, datetime) values (?, ?, ?) returning id";
-        Integer sessionId = jdbcTemplate.queryForObject(sql, Integer.class,
+        Integer sessionId = jdbcTemplate.queryForObject(
+                SAVE_SESSION,
+                Integer.class,
                 movieId,
                 newSession.getPrice(),
-                newSession.getDateTime());
+                newSession.getDateTime()
+        );
         newSession.setId(sessionId);
         return newSession;
     }
 
     public List<Session> findAll() {
-        String sql = """
-                select s.id as session_id,
-                	s.price,
-                	s.datetime,
-                	m.id as movie_id,
-                	m.name as movie_name,
-                	m.description as movie_description
-                from session s
-                left join movie m on m.id = s.movie_id;
-                """;
-        List<Session> sessions = jdbcTemplate.query(sql, this::mapToSessionForList);
+        List<Session> sessions = jdbcTemplate.query(
+                ALL_SESSION_QUERY,
+                this::mapToSessionForList
+        );
         log.info("Найдены сессии: {}", sessions);
         return sessions;
     }

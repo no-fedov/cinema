@@ -19,56 +19,75 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class TicketRepository {
+
+    private static final String TICKET_BY_ID_QUERY = "select * from ticket where id = ?";
+    private static final String SAVE_TICKET_QUERY = """ 
+                insert into ticket (place_id, session_id, is_sold)
+                values (?, ?, false)
+                returning id;
+            """;
+    private static final String BUY_TICKET_QUERY = """
+                update ticket
+                set is_sold = true
+                where ticket_id = ?;
+            """;
+    private static final String TICKETS_BY_SESSION_BY_IS_SOLD = """
+                select t.*,
+                    p.name as place_name,
+                    s.movie_id,
+                    s.price,
+                    s.datetime,
+                    m.name as movie_name,
+                    m.description as movie_description
+                from ticket t
+                    join place p on t.place_id = p.id
+                    join session s on t.session_id = s.id
+                    left join movie m on s.movie_id = m.id
+                where s.id = ? and t.is_sold = ?;
+            """;
+
     private final JdbcTemplate jdbcTemplate;
     private final SessionRepository sessionRepository;
     private final PlaceRepository placeRepository;
 
     public Optional<Ticket> findById(Integer id) {
-        String sql = "select * from ticket where id = ?";
-        Optional<Ticket> currentTicket = jdbcTemplate.query(sql, this::mapToTicket, id).stream().findFirst();
-        log.info("Обработан запрос {}, где id = {}. Найдено: {}", sql, id, currentTicket);
+        Optional<Ticket> currentTicket = jdbcTemplate.query(
+                TICKET_BY_ID_QUERY,
+                this::mapToTicket,
+                id
+        ).stream().findFirst();
+        log.info("Обработан запрос {}, где id = {}. Найдено: {}", TICKET_BY_ID_QUERY, id, currentTicket);
         return currentTicket;
     }
 
     public Ticket save(final Ticket newTicket) {
-        String sql = """ 
-                    insert into ticket (place_id, session_id, is_sold) values
-                    (?, ?, false)
-                    returning id;
-                """;
         Integer placeId = newTicket.getPlace().getId();
         Integer sessionId = newTicket.getSession().getId();
-        Integer ticketId = jdbcTemplate.queryForObject(sql, Integer.class, placeId, sessionId);
+        Integer ticketId = jdbcTemplate.queryForObject(
+                SAVE_TICKET_QUERY,
+                Integer.class,
+                placeId,
+                sessionId
+        );
         newTicket.setId(ticketId);
         log.info("Сохранен новый билет: {}", newTicket);
         return newTicket;
     }
 
-    public void sellTicket(Integer id) {
+    // TODO: посмотреть куда вынести проверку на существование билета
+    public Ticket buyTicket(Integer id) {
         findById(id).orElseThrow(() -> new RuntimeException("билет с id = %s не существует".formatted(id)));
-        String sql = """
-                    update ticket set is_sold = true
-                    where ticket_id = ?;
-                """;
-        jdbcTemplate.update(sql, id);
+        jdbcTemplate.update(BUY_TICKET_QUERY, id);
+        return findById(id).get();
     }
 
     public List<Ticket> findBySessionId(Integer sessionId, boolean isSold) {
-        String sql = """
-                    select t.*,
-                        p.name as place_name,
-                        s.movie_id,
-                        s.price,
-                        s.datetime,
-                        m.name as movie_name,
-                        m.description as movie_description
-                    from ticket t
-                    join place p on t.place_id = p.id
-                    join session s on t.session_id = s.id
-                    left join movie m on s.movie_id = m.id
-                    where s.id = ? and t.is_sold = ?;
-                """;
-        List<Ticket> tickets = jdbcTemplate.query(sql, this::mapToTicketForList, sessionId, isSold);
+        List<Ticket> tickets = jdbcTemplate.query(
+                TICKETS_BY_SESSION_BY_IS_SOLD,
+                this::mapToTicketForList,
+                sessionId,
+                isSold
+        );
         log.info("Найдены билеты на сеанс: {}", tickets);
         return tickets;
     }

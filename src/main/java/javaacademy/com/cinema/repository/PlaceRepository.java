@@ -15,18 +15,27 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class PlaceRepository {
+
+    private static final String PLACE_BY_ID_QUERY = "select * from place where id = ?";
+    private static final String ALL_PLACES_QUERY = "select * from place";
+
     private final JdbcTemplate jdbcTemplate;
 
     public Optional<Place> findById(Integer id) {
-        String sql = "select * from place where id = ?";
-        Optional<Place> currentSession = jdbcTemplate.query(sql, this::mapToPlace, id).stream().findFirst();
-        log.info("Обработан запрос {}, где id = {}. Найдено: {}", sql, id, currentSession);
+        Optional<Place> currentSession = jdbcTemplate.query(
+                PLACE_BY_ID_QUERY,
+                this::mapToPlace,
+                id
+        ).stream().findFirst();
+        log.info("Обработан запрос {}, где id = {}. Найдено: {}", PLACE_BY_ID_QUERY, id, currentSession);
         return currentSession;
     }
 
     public List<Place> findAll() {
-        String sql = "select * from place";
-        List<Place> places = jdbcTemplate.query(sql, this::mapToPlace);
+        List<Place> places = jdbcTemplate.query(
+                ALL_PLACES_QUERY,
+                this::mapToPlace
+        );
         log.info("Найдены места: {}", places);
         return places;
     }

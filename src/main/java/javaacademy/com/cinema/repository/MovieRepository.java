@@ -15,26 +15,40 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class MovieRepository {
+
+    private static final String MOVIE_BY_ID_QUERY = "select * from movie where id = ?";
+    private static final String SAVE_MOVIE_QUERY = "insert into movie (name, description) values(?, ?) returning id";
+    private static final String ALL_MOVIES_QUERY = "select * from movie";
+
     private final JdbcTemplate jdbcTemplate;
 
     public Optional<Movie> findById(Integer id) {
-        String sql = "select * from movie where id = ?";
-        Optional<Movie> currentMovie = jdbcTemplate.query(sql, this::mapToMovie, id).stream().findFirst();
-        log.info("Обработан запрос {}, где id = {}. Найдено: {}", sql, id, currentMovie);
+        Optional<Movie> currentMovie = jdbcTemplate.query(
+                MOVIE_BY_ID_QUERY,
+                this::mapToMovie,
+                id
+        ).stream().findFirst();
+        log.info("Обработан запрос {}, где id = {}. Найдено: {}", MOVIE_BY_ID_QUERY, id, currentMovie);
         return currentMovie;
     }
 
     public Movie save(final Movie newMovie) {
-        String sql = "insert into movie (name, description) values(?, ?) returning id";
-        Integer id = jdbcTemplate.queryForObject(sql, Integer.class, newMovie.getName(), newMovie.getDescription());
+        Integer id = jdbcTemplate.queryForObject(
+                SAVE_MOVIE_QUERY,
+                Integer.class,
+                newMovie.getName(),
+                newMovie.getDescription()
+        );
         newMovie.setId(id);
         log.info("Сохранен новый фильм: {}", newMovie);
         return newMovie;
     }
 
     public List<Movie> findAll() {
-        String sql = "select * from movie";
-        List<Movie> allMovies = jdbcTemplate.query(sql, this::mapToMovie);
+        List<Movie> allMovies = jdbcTemplate.query(
+                ALL_MOVIES_QUERY,
+                this::mapToMovie
+        );
         log.info("Найдены фильмы: {}", allMovies);
         return allMovies;
     }
