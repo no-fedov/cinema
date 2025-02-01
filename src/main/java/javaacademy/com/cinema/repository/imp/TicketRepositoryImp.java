@@ -96,26 +96,26 @@ public class TicketRepositoryImp implements TicketRepository {
         return tickets;
     }
 
-    // TODO: инъекция?
     public List<Ticket> saveSome(final List<Ticket> tickets) {
-        List<Object> queryParameters = new ArrayList<>();
-        StringBuilder queryParameterBuilder = new StringBuilder();
-        for (Ticket ticket : tickets) {
-            Integer placeId = ticket.getPlace().getId();
-            Integer sessionId = ticket.getSession().getId();
-            queryParameters.add(placeId);
-            queryParameters.add(sessionId);
-            queryParameterBuilder.append("(?, ?, false),");
-        }
-        queryParameterBuilder.deleteCharAt(queryParameterBuilder.length() - 1);
+        List<Integer> queryParameters = new ArrayList<>();
+
+        tickets.forEach(ticket -> {
+            queryParameters.add(ticket.getPlace().getId());
+            queryParameters.add(ticket.getSession().getId());
+        });
+
+        String patternForInsert = "(?, ?, false),";
+        patternForInsert = patternForInsert.repeat(tickets.size());
+
+        // удалить последний символ
+        patternForInsert = patternForInsert.substring(0, patternForInsert.length() - 1);
+
         String sql = """
                 insert into ticket (place_id, session_id, is_sold)
-                values
-                """
-                + queryParameterBuilder
-                + """
+                values %s
                 returning id;
-                """;
+                """.formatted(patternForInsert);
+
         List<Integer> ids = jdbcTemplate.query(sql,
                 (rs, rowNum) -> rs.getInt("id"),
                 queryParameters.toArray());
@@ -147,7 +147,7 @@ public class TicketRepositoryImp implements TicketRepository {
         ticket.setPlace(place);
 
         Session session = new Session();
-        session.setId(rs.getInt("id"));
+        session.setId(rs.getInt("session_id"));
         session.setPrice(rs.getBigDecimal("price"));
         session.setDateTime(rs.getTimestamp("datetime").toLocalDateTime());
 
