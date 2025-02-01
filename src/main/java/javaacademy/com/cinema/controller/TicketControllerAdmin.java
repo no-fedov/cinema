@@ -18,7 +18,7 @@ public class TicketControllerAdmin {
 
     @GetMapping("/saled")
     public List<TicketDto> soldTickets() {
-
+        return null;
     }
 
 }
