@@ -10,6 +10,7 @@ import com.javaacademy.cinema.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -119,11 +120,7 @@ public class TicketRepositoryImp implements TicketRepository {
             queryParameters.add(ticket.getSession().getId());
         });
 
-        String patternForInsert = "(?, ?, false),";
-        patternForInsert = patternForInsert.repeat(tickets.size());
-
-        // удалить последний символ
-        patternForInsert = patternForInsert.substring(0, patternForInsert.length() - 1);
+        String patternForInsert = queryPatternForInsertNewTicket(tickets.size());
 
         String sql = """
                 insert into ticket (place_id, session_id, is_sold)
@@ -131,9 +128,11 @@ public class TicketRepositoryImp implements TicketRepository {
                 returning id;
                 """.formatted(patternForInsert);
 
-        List<Integer> ids = jdbcTemplate.query(sql,
+        List<Integer> ids = jdbcTemplate.query(
+                sql,
                 (rs, rowNum) -> rs.getInt("id"),
-                queryParameters.toArray());
+                queryParameters.toArray()
+        );
         for (int i = 0; i < ids.size(); i++) {
             tickets.get(i).setId(ids.get(i));
         }
@@ -186,5 +185,12 @@ public class TicketRepositoryImp implements TicketRepository {
         }
         ticket.setSession(session);
         return ticket;
+    }
+
+    private String queryPatternForInsertNewTicket(int countTickets) {
+        String patternForInsert = "(?, ?, false),";
+        patternForInsert = patternForInsert.repeat(countTickets);
+        patternForInsert = StringUtils.chop(patternForInsert);
+        return patternForInsert;
     }
 }
