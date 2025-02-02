@@ -1,6 +1,6 @@
 package com.javaacademy.cinema.mapper;
 
-import com.javaacademy.cinema.dto.TicketDto;
+import com.javaacademy.cinema.dto.TicketAdminDto;
 import com.javaacademy.cinema.entity.Ticket;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,8 +14,8 @@ public class TicketMapper {
     private final SessionMapper sessionMapper;
     private final PlaceMapper placeMapper;
 
-    public TicketDto mapToTicketDto(Ticket ticket) {
-        return new TicketDto(
+    public TicketAdminDto mapToTicketDto(Ticket ticket) {
+        return new TicketAdminDto(
                 ticket.getId(),
                 sessionMapper.mapToSessionDto(ticket.getSession()),
                 placeMapper.mapToPlaceDto(ticket.getPlace()),
@@ -23,7 +23,7 @@ public class TicketMapper {
         );
     }
 
-    public List<TicketDto> mapToTicketDtoList(List<Ticket> tickets) {
+    public List<TicketAdminDto> mapToTicketDtoList(List<Ticket> tickets) {
         return tickets.stream().map(this::mapToTicketDto).toList();
     }
 }

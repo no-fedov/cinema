@@ -1,8 +1,8 @@
 package com.javaacademy.cinema.controller.admin;
 
-import com.javaacademy.cinema.dto.MovieCreateDto;
-import com.javaacademy.cinema.dto.MovieDto;
-import com.javaacademy.cinema.service.MovieService;
+import com.javaacademy.cinema.dto.MovieCreateAdminDto;
+import com.javaacademy.cinema.dto.MovieAdminDto;
+import com.javaacademy.cinema.service.MovieAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,16 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/movie")
-public class MovieControllerAdmin {
+public class MovieAdminController {
 
     private final AdminValidator adminValidator;
-    private final MovieService movieService;
+    private final MovieAdminService movieAdminService;
 
     @PostMapping
-    public MovieDto createMovie(@RequestHeader("user-token") String token,
-                            @RequestBody MovieCreateDto dto) {
+    public MovieAdminDto createMovie(@RequestHeader("user-token") String token,
+                                     @RequestBody MovieCreateAdminDto dto) {
         adminValidator.valid(token);
-        MovieDto movie = movieService.createMovie(dto);
+        MovieAdminDto movie = movieAdminService.createMovie(dto);
         return movie;
     }
 }

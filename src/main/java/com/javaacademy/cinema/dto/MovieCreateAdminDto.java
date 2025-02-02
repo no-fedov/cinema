@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MovieCreateDto {
+public class MovieCreateAdminDto {
     private String name;
     private String description;
 }

@@ -5,10 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class MovieDto {
+@NoArgsConstructor
+public class TicketAdminDto {
     private Integer id;
-    private String name;
-    private String description;
+    private SessionAdminDto session;
+    private PlaceDto place;
+    private Boolean isSold;
 }
