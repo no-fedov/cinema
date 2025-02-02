@@ -29,17 +29,21 @@ public class TicketServiceAdminImp implements TicketService {
     private final SessionMapper sessionMapper;
     private final TicketMapper ticketMapper;
 
-    public void createTicketForSession(SessionDto dto) {
+    public List<TicketDto> createTicketForSession(SessionDto dto) {
         List<Place> places = placeRepository.findAll();
+        if (places.isEmpty()) {
+            throw new RuntimeException("Нет посадочных мест");
+        }
         List<Ticket> newTickets = new ArrayList<>();
         Session currentSession = sessionMapper.mapToSession(dto);
 
-        for (int i = 0; i < places.size(); i++) {
-            Ticket newmTicket = new Ticket(null, currentSession, places.get(i), FALSE);
+        for (Place place : places) {
+            Ticket newmTicket = new Ticket(null, currentSession, place, FALSE);
             newTickets.add(newmTicket);
         }
-        ticketRepository.saveSome(newTickets);
+        List<Ticket> tickets = ticketRepository.saveSome(newTickets);
         log.info("Созданы билеты для сеанса: {}", newTickets);
+        return ticketMapper.mapToTicketDtoList(tickets);
     }
 
     @Override

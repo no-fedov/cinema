@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface TicketService {
 
-    void createTicketForSession(SessionDto dto);
+    List<TicketDto> createTicketForSession(SessionDto dto);
 
     List<TicketDto> getTicketsBySoldCondition(boolean isSold);
 }

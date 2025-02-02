@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 
 @Slf4j
 @RestController
@@ -25,7 +25,7 @@ public class TicketControllerAdmin {
     @GetMapping("/saled")
     public List<TicketDto> soldTickets(@RequestHeader("user-token") String token) {
         adminValidator.valid(token);
-        List<TicketDto> soldTickets = ticketService.getTicketsBySoldCondition(FALSE);
+        List<TicketDto> soldTickets = ticketService.getTicketsBySoldCondition(TRUE);
         log.info("Найдены все проданные билеты: {}", soldTickets);
         return soldTickets;
     }
