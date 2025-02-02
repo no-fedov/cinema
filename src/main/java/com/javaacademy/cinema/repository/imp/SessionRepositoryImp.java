@@ -27,11 +27,11 @@ public class SessionRepositoryImp implements SessionRepository {
             """;
     private static final String ALL_SESSION_QUERY = """
             select s.id as session_id,
-            	s.price,
-            	s.datetime,
-            	m.id as movie_id,
-            	m.name as movie_name,
-            	m.description as movie_description
+                s.price,
+                s.datetime,
+                m.id as movie_id,
+                m.name as movie_name,
+                m.description as movie_description
             from session s
                 left join movie m on m.id = s.movie_id;
             """;

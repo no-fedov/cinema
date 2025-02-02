@@ -25,7 +25,7 @@ import java.util.Optional;
 public class TicketRepositoryImp implements TicketRepository {
 
     private static final String TICKET_BY_ID_QUERY = "select * from ticket where id = ?";
-    private static final String SAVE_TICKET_QUERY = """ 
+    private static final String SAVE_TICKET_QUERY = """
                 insert into ticket (place_id, session_id, is_sold)
                 values (?, ?, false)
                 returning id;
@@ -93,7 +93,7 @@ public class TicketRepositoryImp implements TicketRepository {
         return newTicket;
     }
 
-    // TODO: посмотреть куда вынести проверку на существование билета
+    // посмотреть куда вынести проверку на существование билета
     public Ticket buyTicket(Integer id) {
         findById(id).orElseThrow(() -> new RuntimeException("билет с id = %s не существует".formatted(id)));
         jdbcTemplate.update(BUY_TICKET_QUERY, id);
