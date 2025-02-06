@@ -5,11 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class TicketAdminDto {
+@AllArgsConstructor
+public class PlaceAdminDto {
     private Integer id;
-    private SessionAdminDto session;
-    private PlaceAdminDto place;
-    private Boolean isSold;
+    private String name;
 }

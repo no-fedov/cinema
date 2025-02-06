@@ -6,18 +6,18 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SessionAdminDto {
+public class TicketDto {
+    @JsonProperty("ticket_id")
     private Integer id;
-    private BigDecimal price;
-    @JsonProperty("date_time")
+    @JsonProperty("place_name")
+    private String placeName;
+    @JsonProperty("movie_name")
+    private String movieName;
     @JsonFormat(pattern = "dd.MM.yyyy HH:mm")
-    private LocalDateTime dateTime;
-    private MovieAdminDto movie;
-
+    private LocalDateTime date;
 }

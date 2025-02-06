@@ -2,7 +2,7 @@ package com.javaacademy.cinema.controller.admin;
 
 import com.javaacademy.cinema.dto.MovieCreateAdminDto;
 import com.javaacademy.cinema.dto.MovieAdminDto;
-import com.javaacademy.cinema.service.MovieAdminService;
+import com.javaacademy.cinema.service.admin.MovieAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

@@ -1,11 +1,14 @@
 package com.javaacademy.cinema.mapper;
 
-import com.javaacademy.cinema.dto.SessionCreateAdminDto;
 import com.javaacademy.cinema.dto.SessionAdminDto;
+import com.javaacademy.cinema.dto.SessionCreateAdminDto;
+import com.javaacademy.cinema.dto.SessionDto;
 import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.entity.Session;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -31,14 +34,28 @@ public class SessionMapper {
         return session;
     }
 
-    public SessionAdminDto mapToSessionDto(Session session) {
+    public SessionAdminDto mapToSessionAdminDto(Session session) {
         return new SessionAdminDto(
                 session.getId(),
                 session.getPrice(),
                 session.getDateTime(),
-                movieMapper.mapToMovieDto(session.getMovie())
+                movieMapper.mapToMovieAdminDto(session.getMovie())
         );
     }
 
+    public SessionDto mapToSessionDto(Session session) {
+        return new SessionDto(
+                session.getId(),
+                session.getMovie().getName(),
+                session.getDateTime(),
+                session.getPrice()
+        );
 
+    }
+
+    public List<SessionDto> mapToSessionDto(List<Session> sessions) {
+        return sessions.stream().
+                map(this::mapToSessionDto)
+                .toList();
+    }
 }

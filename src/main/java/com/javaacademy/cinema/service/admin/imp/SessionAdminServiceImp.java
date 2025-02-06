@@ -1,4 +1,4 @@
-package com.javaacademy.cinema.service.imp;
+package com.javaacademy.cinema.service.admin.imp;
 
 import com.javaacademy.cinema.repository.SessionRepository;
 import com.javaacademy.cinema.repository.TicketRepository;
@@ -9,7 +9,7 @@ import com.javaacademy.cinema.entity.Session;
 import com.javaacademy.cinema.mapper.SessionMapper;
 import com.javaacademy.cinema.repository.MovieRepository;
 import com.javaacademy.cinema.repository.PlaceRepository;
-import com.javaacademy.cinema.service.SessionAdminService;
+import com.javaacademy.cinema.service.admin.SessionAdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +33,6 @@ public class SessionAdminServiceImp implements SessionAdminService {
         final Session newSession = sessionMapper.mapToSession(dto, currentMovie);
         sessionRepository.save(newSession);
         log.info("Создана сеанс: {}", newSession);
-        return sessionMapper.mapToSessionDto(newSession);
+        return sessionMapper.mapToSessionAdminDto(newSession);
     }
 }

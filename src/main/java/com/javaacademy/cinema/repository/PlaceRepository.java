@@ -9,4 +9,8 @@ public interface PlaceRepository {
     Optional<Place> findById(Integer id);
 
     List<Place> findAll();
+
+    List<Place> findFreeBySessionId(Integer sessionId);
+
+    Optional<Place> findByName(String placeName);
 }

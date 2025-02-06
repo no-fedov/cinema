@@ -2,8 +2,8 @@ package com.javaacademy.cinema.controller.admin;
 
 import com.javaacademy.cinema.dto.SessionCreateAdminDto;
 import com.javaacademy.cinema.dto.SessionAdminDto;
-import com.javaacademy.cinema.service.SessionAdminService;
-import com.javaacademy.cinema.service.TicketAdminService;
+import com.javaacademy.cinema.service.admin.SessionAdminService;
+import com.javaacademy.cinema.service.admin.TicketAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

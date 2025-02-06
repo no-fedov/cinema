@@ -10,12 +10,13 @@ public interface TicketRepository {
 
     Ticket save(Ticket newTicket);
 
-    // посмотреть куда вынести проверку на существование билета
-    Ticket buyTicket(Integer id);
+    Ticket buy(Integer id);
 
     List<Ticket> findBySessionId(Integer sessionId, boolean isSold);
 
     List<Ticket> saveSome(List<Ticket> tickets);
 
-    List<Ticket> findTicketsBySoldCondition(boolean isSold);
+    List<Ticket> findBySoldCondition(boolean isSold);
+
+    Optional<Ticket> findIdBySessionByPlace(Integer sessionId, Integer placeId);
 }

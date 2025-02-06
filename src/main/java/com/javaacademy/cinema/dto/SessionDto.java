@@ -12,12 +12,11 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SessionAdminDto {
+public class SessionDto {
     private Integer id;
-    private BigDecimal price;
-    @JsonProperty("date_time")
+    @JsonProperty("movie_name")
+    private String movieName;
     @JsonFormat(pattern = "dd.MM.yyyy HH:mm")
-    private LocalDateTime dateTime;
-    private MovieAdminDto movie;
-
+    private LocalDateTime date;
+    private BigDecimal price;
 }

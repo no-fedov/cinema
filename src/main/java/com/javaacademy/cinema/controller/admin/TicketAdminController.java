@@ -1,7 +1,7 @@
 package com.javaacademy.cinema.controller.admin;
 
 import com.javaacademy.cinema.dto.TicketAdminDto;
-import com.javaacademy.cinema.service.TicketAdminService;
+import com.javaacademy.cinema.service.admin.TicketAdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;

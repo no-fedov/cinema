@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MovieRepository {
+
     Optional<Movie> findById(Integer id);
 
     Movie save(Movie newMovie);

@@ -34,7 +34,7 @@ public class TicketRepositoryImp implements TicketRepository {
     private static final String BUY_TICKET_QUERY = """
                 update ticket
                 set is_sold = true
-                where ticket_id = ?;
+                where id = ?;
             """;
     private static final String TICKETS_BY_SESSION_BY_IS_SOLD = """
                 select t.*,
@@ -65,11 +65,17 @@ public class TicketRepositoryImp implements TicketRepository {
                 where t.is_sold = ?
                 order by t.id;
             """;
+    private static final String TICKET_ID_BY_SESSION_BY_PLACE = """
+                select *
+                from ticket
+                where session_id = ? and place_id = ?;
+            """;
 
     private final JdbcTemplate jdbcTemplate;
     private final SessionRepository sessionRepository;
     private final PlaceRepository placeRepository;
 
+    @Override
     public Optional<Ticket> findById(Integer id) {
         Optional<Ticket> currentTicket = jdbcTemplate.query(
                 TICKET_BY_ID_QUERY,
@@ -80,6 +86,7 @@ public class TicketRepositoryImp implements TicketRepository {
         return currentTicket;
     }
 
+    @Override
     public Ticket save(final Ticket newTicket) {
         Integer placeId = newTicket.getPlace().getId();
         Integer sessionId = newTicket.getSession().getId();
@@ -94,13 +101,16 @@ public class TicketRepositoryImp implements TicketRepository {
         return newTicket;
     }
 
-    // посмотреть куда вынести проверку на существование билета
-    public Ticket buyTicket(Integer id) {
-        findById(id).orElseThrow(() -> new RuntimeException("билет с id = %s не существует".formatted(id)));
+    @Override
+    public Ticket buy(Integer id) {
+        Ticket currentTicket = findById(id)
+                .orElseThrow(() -> new RuntimeException("билет с id = %s не существует".formatted(id)));
         jdbcTemplate.update(BUY_TICKET_QUERY, id);
-        return findById(id).get();
+        currentTicket.setIsSold(Boolean.TRUE);
+        return currentTicket;
     }
 
+    @Override
     public List<Ticket> findBySessionId(Integer sessionId, boolean isSold) {
         List<Ticket> tickets = jdbcTemplate.query(
                 TICKETS_BY_SESSION_BY_IS_SOLD,
@@ -112,6 +122,7 @@ public class TicketRepositoryImp implements TicketRepository {
         return tickets;
     }
 
+    @Override
     public List<Ticket> saveSome(final List<Ticket> tickets) {
         List<Integer> queryParameters = new ArrayList<>();
 
@@ -140,13 +151,24 @@ public class TicketRepositoryImp implements TicketRepository {
     }
 
     @Override
-    public List<Ticket> findTicketsBySoldCondition(boolean isSold) {
+    public List<Ticket> findBySoldCondition(boolean isSold) {
         List<Ticket> tickets = jdbcTemplate.query(
                 TICKETS_IS_SOLD,
                 this::mapToTicketForList,
                 isSold);
         log.info("Найдены все билеты, где sold = {} : {}", isSold, tickets);
         return tickets;
+    }
+
+    @Override
+    public Optional<Ticket> findIdBySessionByPlace(Integer sessionId, Integer placeId) {
+        Optional<Ticket> ticket = jdbcTemplate.query(
+                TICKET_ID_BY_SESSION_BY_PLACE,
+                this::mapToTicket,
+                sessionId,
+                placeId
+        ).stream().findFirst();
+        return ticket;
     }
 
     @SneakyThrows

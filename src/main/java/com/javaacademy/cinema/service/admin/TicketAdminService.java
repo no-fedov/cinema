@@ -1,4 +1,4 @@
-package com.javaacademy.cinema.service;
+package com.javaacademy.cinema.service.admin;
 
 import com.javaacademy.cinema.dto.SessionAdminDto;
 import com.javaacademy.cinema.dto.TicketAdminDto;
