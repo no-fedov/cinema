@@ -8,7 +8,6 @@ import com.javaacademy.cinema.exception.NotFoundEntityException;
 import com.javaacademy.cinema.exception.TickedAlreadySoldException;
 import com.javaacademy.cinema.mapper.TicketMapper;
 import com.javaacademy.cinema.repository.PlaceRepository;
-import com.javaacademy.cinema.repository.SessionRepository;
 import com.javaacademy.cinema.repository.TicketRepository;
 import com.javaacademy.cinema.service.user.TicketService;
 import lombok.RequiredArgsConstructor;
