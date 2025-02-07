@@ -25,7 +25,7 @@ public class SessionAdminController {
                                          @RequestBody SessionCreateAdminDto dto) {
         adminValidator.valid(token);
         SessionAdminDto session = sessionAdminService.createSession(dto);
-        ticketAdminService.createTicketForSession(session);
+        ticketAdminService.createForSession(session);
         return session;
     }
 }

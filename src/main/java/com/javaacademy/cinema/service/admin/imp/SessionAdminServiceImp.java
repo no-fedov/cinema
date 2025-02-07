@@ -1,5 +1,6 @@
 package com.javaacademy.cinema.service.admin.imp;
 
+import com.javaacademy.cinema.exception.NotFoundEntityException;
 import com.javaacademy.cinema.repository.SessionRepository;
 import com.javaacademy.cinema.repository.TicketRepository;
 import com.javaacademy.cinema.dto.SessionCreateAdminDto;
@@ -29,7 +30,7 @@ public class SessionAdminServiceImp implements SessionAdminService {
     public SessionAdminDto createSession(SessionCreateAdminDto dto) {
         Integer movieId = dto.getMovieId();
         Movie currentMovie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new RuntimeException("кина не будет, оно не найдено"));
+                .orElseThrow(() -> new NotFoundEntityException("Кино с id =%s не найдено".formatted(movieId)));
         final Session newSession = sessionMapper.mapToSession(dto, currentMovie);
         sessionRepository.save(newSession);
         log.info("Создана сеанс: {}", newSession);

@@ -25,7 +25,7 @@ public class TicketAdminController {
     @GetMapping("/saled")
     public List<TicketAdminDto> soldTickets(@RequestHeader("user-token") String token) {
         adminValidator.valid(token);
-        List<TicketAdminDto> soldTickets = ticketAdminService.getTicketsBySoldCondition(TRUE);
+        List<TicketAdminDto> soldTickets = ticketAdminService.getBySoldCondition(TRUE);
         log.info("Найдены все проданные билеты: {}", soldTickets);
         return soldTickets;
     }

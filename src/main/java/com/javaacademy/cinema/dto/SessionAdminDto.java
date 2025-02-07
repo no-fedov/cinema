@@ -19,5 +19,4 @@ public class SessionAdminDto {
     @JsonFormat(pattern = "dd.MM.yyyy HH:mm")
     private LocalDateTime dateTime;
     private MovieAdminDto movie;
-
 }
