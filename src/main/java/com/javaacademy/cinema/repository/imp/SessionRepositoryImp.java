@@ -39,6 +39,7 @@ public class SessionRepositoryImp implements SessionRepository {
     private final JdbcTemplate jdbcTemplate;
     private final MovieRepository movieRepository;
 
+    @Override
     public Optional<Session> findById(Integer id) {
         Optional<Session> currentSession = jdbcTemplate.query(
                 SESSION_BY_ID_QUERY,
@@ -49,6 +50,7 @@ public class SessionRepositoryImp implements SessionRepository {
         return currentSession;
     }
 
+    @Override
     public Session save(final Session newSession) {
         Integer movieId = newSession.getMovie().getId();
         Integer sessionId = jdbcTemplate.queryForObject(
@@ -62,6 +64,7 @@ public class SessionRepositoryImp implements SessionRepository {
         return newSession;
     }
 
+    @Override
     public List<Session> findAll() {
         List<Session> sessions = jdbcTemplate.query(
                 ALL_SESSION_QUERY,

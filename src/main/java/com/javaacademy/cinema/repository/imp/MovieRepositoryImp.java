@@ -23,6 +23,7 @@ public class MovieRepositoryImp implements MovieRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
+    @Override
     public Optional<Movie> findById(Integer id) {
         Optional<Movie> currentMovie = jdbcTemplate.query(
                 MOVIE_BY_ID_QUERY,
@@ -33,6 +34,7 @@ public class MovieRepositoryImp implements MovieRepository {
         return currentMovie;
     }
 
+    @Override
     public Movie save(final Movie newMovie) {
         Integer id = jdbcTemplate.queryForObject(
                 SAVE_MOVIE_QUERY,
@@ -45,6 +47,7 @@ public class MovieRepositoryImp implements MovieRepository {
         return newMovie;
     }
 
+    @Override
     public List<Movie> findAll() {
         List<Movie> allMovies = jdbcTemplate.query(
                 ALL_MOVIES_QUERY,
