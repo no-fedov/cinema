@@ -47,9 +47,10 @@ public class SessionAdminControllerTest {
             select currval('movie_id_seq');
             """;
     private static final int TICKET_COUNT_FOR_SESSION = 10;
-    private static final LocalDateTime sessionTime = LocalDateTime.of(
+    private static final LocalDateTime SESSION_TIME = LocalDateTime.of(
             2020,
             10,
+
             10,
             10,
             10
@@ -72,7 +73,7 @@ public class SessionAdminControllerTest {
     private TicketRepository ticketRepository;
 
     @BeforeEach
-    public void setMaxMovieId() {
+    public void initSequence() {
         jdbcTemplate.execute(INIT_MOVIE_SEQUENCE);
         jdbcTemplate.execute(INIT_SESSION_SEQUENCE);
     }
@@ -98,18 +99,18 @@ public class SessionAdminControllerTest {
         SessionAdminDto expectedSessionAdminDto = new SessionAdminDto(
                 maxSessionId + 1,
                 new BigDecimal("1000"),
-                sessionTime,
+                SESSION_TIME,
                 new MovieAdminDto(currentMovieId, "name", "description")
         );
         Session expectedSession = new Session(
                 maxSessionId + 1,
-                sessionTime,
+                SESSION_TIME,
                 new BigDecimal("1000"),
                 savedMovie
         );
         SessionCreateAdminDto dto = new SessionCreateAdminDto(
                 currentMovieId,
-                sessionTime,
+                SESSION_TIME,
                 new BigDecimal("1000")
         );
         SessionAdminDto savedSessionAdminDto = RestAssured.given(requestSpecification)

@@ -82,7 +82,7 @@ public class MovieAdminControllerTest {
     @Test
     @DisplayName("Ошибка доступа при создании фильма")
     public void createMovieWithoutAccess() {
-        ErrorResponse expectedResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+        ErrorResponse expectedResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(),
                 "Нет прав доступа, авторизуйтесь как администратор");
         MovieCreateAdminDto dto = new MovieCreateAdminDto("film_name", "film_description");
         ErrorResponse response = RestAssured.given(requestSpecification)
@@ -95,5 +95,6 @@ public class MovieAdminControllerTest {
                 .body()
                 .as(ErrorResponse.class);
         assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getCode());
+        assertEquals(expectedResponse, response);
     }
 }
