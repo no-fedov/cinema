@@ -62,7 +62,7 @@ public class MovieAdminControllerTest {
                 .body(dto)
                 .post()
                 .then()
-                .statusCode(HttpStatus.OK.value())
+                .statusCode(HttpStatus.CREATED.value())
                 .extract()
                 .body()
                 .as(MovieAdminDto.class);
