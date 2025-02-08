@@ -1,0 +1,19 @@
+server:
+  port: 9999
+
+app:
+  admin:
+    token: secretadmin123
+
+spring:
+  sql:
+    init:
+      separator: /end_script
+      mode: always
+      data-locations: classpath:fill-data.sql
+      schema-locations: classpath:init.sql
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cinema?currentSchema=test
+    username: postgres
+    password: lowkey
+    driver: org.postgresql.Driver

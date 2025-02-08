@@ -1,5 +1,6 @@
 package com.javaacademy.cinema.controller;
 
+import com.javaacademy.cinema.exception.AuthenticationException;
 import com.javaacademy.cinema.exception.ErrorResponse;
 import com.javaacademy.cinema.exception.NotFoundEntityException;
 import com.javaacademy.cinema.exception.TickedAlreadySoldException;
@@ -25,6 +26,13 @@ public class ExceptionAdviceController {
     public ErrorResponse conflictExceptionHandler(RuntimeException e) {
         return new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
     }
+
+    @ExceptionHandler({AuthenticationException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse authenticationExceptionHandler(RuntimeException e) {
+        return new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
+    }
+
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

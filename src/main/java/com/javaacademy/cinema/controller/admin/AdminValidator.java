@@ -1,7 +1,9 @@
 package com.javaacademy.cinema.controller.admin;
 
 import com.javaacademy.cinema.config.AdminProperty;
+import com.javaacademy.cinema.exception.AuthenticationException;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -14,7 +16,7 @@ public class AdminValidator {
 
     public void valid(String token) {
         if (!Objects.equals(token, adminProperty.getToken())) {
-            throw new RuntimeException("Нет прав доступа, авторизуйтесь как администратор");
+            throw new AuthenticationException("Нет прав доступа, авторизуйтесь как администратор");
         }
     }
 }
