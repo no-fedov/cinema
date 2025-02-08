@@ -14,10 +14,12 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
+import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -44,13 +46,18 @@ public class SessionAdminControllerTest {
     private static final String CURRENT_VALUE_MOVIE_SEQUENCE_QUERY = """
             select currval('movie_id_seq');
             """;
+    private static final int TICKET_COUNT_FOR_SESSION = 10;
+    private static final LocalDateTime sessionTime = LocalDateTime.of(
+            2020,
+            10,
+            10,
+            10,
+            10
+    );
+    @Value("${server.port}")
+    int port;
 
-    private final RequestSpecification requestSpecification = new RequestSpecBuilder()
-            .setPort(9999)
-            .setBasePath("/session")
-            .setContentType(ContentType.JSON)
-            .log(LogDetail.ALL)
-            .build();
+    private RequestSpecification requestSpecification;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -70,29 +77,39 @@ public class SessionAdminControllerTest {
         jdbcTemplate.execute(INIT_SESSION_SEQUENCE);
     }
 
+    @PostConstruct
+    public void initRestAssuredSpec() {
+        requestSpecification = new RequestSpecBuilder()
+                .setPort(port)
+                .setBasePath("/session")
+                .setContentType(ContentType.JSON)
+                .log(LogDetail.ALL)
+                .build();
+    }
+
     @Test
     @DisplayName("Успешное создание сеанса и билетов на этот сеанс")
     public void createSessionSuccess() {
         Movie savedMovie = movieRepository.save(new Movie(null, "name", "description"));
         Integer currentMovieId = savedMovie.getId();
-        Integer currentMovieIdFromDataBase = jdbcTemplate.queryForObject(CURRENT_VALUE_MOVIE_SEQUENCE_QUERY, Integer.class);
-        assertEquals(currentMovieIdFromDataBase, currentMovieId);
+        Integer currentMovieIdDB = jdbcTemplate.queryForObject(CURRENT_VALUE_MOVIE_SEQUENCE_QUERY, Integer.class);
+        assertEquals(currentMovieIdDB, currentMovieId);
         int maxSessionId = jdbcTemplate.queryForObject(CURRENT_VALUE_SESSION_SEQUENCE_QUERY, Integer.class);
         SessionAdminDto expectedSessionAdminDto = new SessionAdminDto(
                 maxSessionId + 1,
                 new BigDecimal("1000"),
-                LocalDateTime.of(2020, 1, 1, 1, 1),
+                sessionTime,
                 new MovieAdminDto(currentMovieId, "name", "description")
         );
         Session expectedSession = new Session(
                 maxSessionId + 1,
-                LocalDateTime.of(2020, 1, 1, 1, 1),
+                sessionTime,
                 new BigDecimal("1000"),
                 savedMovie
         );
         SessionCreateAdminDto dto = new SessionCreateAdminDto(
                 currentMovieId,
-                LocalDateTime.of(2020, 1, 1, 1, 1),
+                sessionTime,
                 new BigDecimal("1000")
         );
         SessionAdminDto savedSessionAdminDto = RestAssured.given(requestSpecification)
@@ -109,6 +126,6 @@ public class SessionAdminControllerTest {
         assertEquals(expectedSession, savedSession);
         int currentSessionId = savedSession.getId();
         List<Ticket> tickets = ticketRepository.findBySessionId(currentSessionId, false);
-        assertEquals(10, tickets.stream().filter(t -> !t.getIsSold()).count());
+        assertEquals(TICKET_COUNT_FOR_SESSION, tickets.stream().filter(t -> !t.getIsSold()).count());
     }
 }

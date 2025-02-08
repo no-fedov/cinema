@@ -9,10 +9,12 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
+import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -26,13 +28,13 @@ public class MovieAdminControllerTest {
     private static final String CURRENT_VALUE_MOVIE_SEQUENCE_QUERY = """
             select currval('movie_id_seq');
             """;
-    private int maxMovieId;
-    private final RequestSpecification requestSpecification = new RequestSpecBuilder()
-            .setPort(9999)
-            .setBasePath("/movie")
-            .setContentType(ContentType.JSON)
-            .log(LogDetail.ALL)
-            .build();
+    private static final String INIT_MOVIE_SEQUENCE = """
+            select nextval('movie_id_seq');
+            """;
+    private RequestSpecification requestSpecification;
+
+    @Value("${server.port}")
+    int port;
 
     @Autowired
     private MovieRepository movieRepository;
@@ -40,20 +42,28 @@ public class MovieAdminControllerTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @PostConstruct
+    public void initRestAssuredSpec() {
+        requestSpecification = new RequestSpecBuilder()
+                .setPort(port)
+                .setBasePath("/movie")
+                .setContentType(ContentType.JSON)
+                .log(LogDetail.ALL)
+                .build();
+    }
+
     @BeforeEach
-    public void setMaxMovieId() {
-        jdbcTemplate.execute("""
-                select nextval('movie_id_seq');
-                """);
-        maxMovieId = jdbcTemplate.queryForObject(CURRENT_VALUE_MOVIE_SEQUENCE_QUERY, Integer.class) + 1;
+    public void initSequence() {
+        jdbcTemplate.execute(INIT_MOVIE_SEQUENCE);
     }
 
     @Test
     @DisplayName("Успешное создание фильма")
     public void createMovieSuccess() {
+        int currentMovieSeqValue = jdbcTemplate.queryForObject(CURRENT_VALUE_MOVIE_SEQUENCE_QUERY, Integer.class);
         MovieCreateAdminDto dto = new MovieCreateAdminDto("film_name", "film_description");
         MovieAdminDto expectedMovieAdminDto = new MovieAdminDto(
-                maxMovieId,
+                currentMovieSeqValue + 1,
                 "film_name",
                 "film_description"
         );
