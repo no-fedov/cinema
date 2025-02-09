@@ -1,7 +1,6 @@
 package com.javaacademy.cinema.controller;
 
 import com.javaacademy.cinema.exception.AuthenticationException;
-import com.javaacademy.cinema.exception.ErrorResponse;
 import com.javaacademy.cinema.exception.NotFoundEntityException;
 import com.javaacademy.cinema.exception.TickedAlreadySoldException;
 import lombok.extern.slf4j.Slf4j;

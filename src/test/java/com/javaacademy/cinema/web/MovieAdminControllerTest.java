@@ -1,8 +1,10 @@
 package com.javaacademy.cinema.web;
 
+import com.javaacademy.cinema.config.AdminProperty;
+import com.javaacademy.cinema.controller.ErrorResponse;
 import com.javaacademy.cinema.dto.MovieAdminDto;
 import com.javaacademy.cinema.dto.MovieCreateAdminDto;
-import com.javaacademy.cinema.exception.ErrorResponse;
+import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.repository.MovieRepository;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
@@ -10,7 +12,6 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import jakarta.annotation.PostConstruct;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,19 +19,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.jdbc.Sql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @AutoConfigureWebMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@Sql(scripts = "classpath:clear-db.sql")
 public class MovieAdminControllerTest {
-    private static final String CURRENT_VALUE_MOVIE_SEQUENCE_QUERY = """
-            select currval('movie_id_seq');
-            """;
-    private static final String INIT_MOVIE_SEQUENCE = """
-            select nextval('movie_id_seq');
-            """;
+
     private RequestSpecification requestSpecification;
 
     @Value("${server.port}")
@@ -40,7 +38,7 @@ public class MovieAdminControllerTest {
     private MovieRepository movieRepository;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private AdminProperty adminProperty;
 
     @PostConstruct
     public void initRestAssuredSpec() {
@@ -52,23 +50,17 @@ public class MovieAdminControllerTest {
                 .build();
     }
 
-    @BeforeEach
-    public void initSequence() {
-        jdbcTemplate.execute(INIT_MOVIE_SEQUENCE);
-    }
-
     @Test
     @DisplayName("Успешное создание фильма")
     public void createMovieSuccess() {
-        int currentMovieSeqValue = jdbcTemplate.queryForObject(CURRENT_VALUE_MOVIE_SEQUENCE_QUERY, Integer.class);
         MovieCreateAdminDto dto = new MovieCreateAdminDto("film_name", "film_description");
         MovieAdminDto expectedMovieAdminDto = new MovieAdminDto(
-                currentMovieSeqValue + 1,
+                null,
                 "film_name",
                 "film_description"
         );
         MovieAdminDto responseMovieAdminDto = RestAssured.given(requestSpecification)
-                .header("user-token", "secretadmin123")
+                .header("user-token", adminProperty.getToken())
                 .body(dto)
                 .post()
                 .then()
@@ -76,7 +68,12 @@ public class MovieAdminControllerTest {
                 .extract()
                 .body()
                 .as(MovieAdminDto.class);
-        assertEquals(expectedMovieAdminDto, responseMovieAdminDto);
+        assertEquals(expectedMovieAdminDto.getDescription(), responseMovieAdminDto.getDescription());
+        assertEquals(expectedMovieAdminDto.getName(), responseMovieAdminDto.getName());
+        assertNotNull(responseMovieAdminDto.getId());
+        Movie savedMovie = movieRepository.findById(responseMovieAdminDto.getId()).get();
+        assertEquals(dto.getName(), savedMovie.getName());
+        assertEquals(dto.getDescription(), savedMovie.getDescription());
     }
 
     @Test

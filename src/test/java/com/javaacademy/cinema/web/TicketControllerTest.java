@@ -1,8 +1,8 @@
 package com.javaacademy.cinema.web;
 
-import com.javaacademy.cinema.config.AdminProperty;
 import com.javaacademy.cinema.controller.ErrorResponse;
-import com.javaacademy.cinema.dto.TicketAdminDto;
+import com.javaacademy.cinema.dto.TicketBookingDto;
+import com.javaacademy.cinema.dto.TicketDto;
 import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.entity.Place;
 import com.javaacademy.cinema.entity.Session;
@@ -12,7 +12,6 @@ import com.javaacademy.cinema.repository.SessionRepository;
 import com.javaacademy.cinema.repository.TicketRepository;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.common.mapper.TypeRef;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
@@ -28,28 +27,25 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @AutoConfigureWebMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @Sql(scripts = "classpath:clear-db.sql")
-public class TicketAdminControllerTest {
+public class TicketControllerTest {
 
     private static final LocalDateTime SESSION_TIME = LocalDateTime.of(
-            2020,
+            2000,
             10,
             10,
             10,
-            10
-    );
+            10);
+
+    private RequestSpecification requestSpecification;
 
     @Value("${server.port}")
     int port;
-
-    private RequestSpecification requestSpecification;
 
     @Autowired
     private MovieRepository movieRepository;
@@ -60,57 +56,56 @@ public class TicketAdminControllerTest {
     @Autowired
     private TicketRepository ticketRepository;
 
-    @Autowired
-    private AdminProperty adminProperty;
-
     @PostConstruct
     public void initRestAssuredSpec() {
         requestSpecification = new RequestSpecBuilder()
                 .setPort(port)
-                .setBasePath("/ticket")
+                .setBasePath("/ticket/booking")
                 .setContentType(ContentType.JSON)
                 .log(LogDetail.ALL)
                 .build();
     }
 
     @Test
-    @DisplayName("Поиск всех проданных билетов")
-    public void findSoldTicketsSuccess() {
+    @DisplayName("Упешная покупка билета")
+    public void buyTicketSuccess() {
         Movie movie = movieRepository.save(new Movie(null, "name", "description"));
-        Session newSession = new Session(null, SESSION_TIME, new BigDecimal("1000"), movie);
-        Session savedSession = sessionRepository.save(newSession);
-        Ticket newTicket = new Ticket(null, savedSession, new Place(1, "A1"), false);
-        Ticket savedTicket = ticketRepository.save(newTicket);
-        Ticket soldTicket = ticketRepository.buy(savedTicket.getId());
-        List<TicketAdminDto> soldTickets = RestAssured.given(requestSpecification)
-                .header("user-token", adminProperty.getToken())
-                .get("/saled")
+        Session session = sessionRepository.save(new Session(null, SESSION_TIME, new BigDecimal("100"), movie));
+        Ticket ticket = ticketRepository.save(
+                new Ticket(null, session, new Place(1, "A1"), Boolean.FALSE)
+        );
+        TicketBookingDto dto = new TicketBookingDto(session.getId(), "A1");
+        String expectedPlaceName = "'1A'";
+        TicketDto soldTicket = RestAssured.given(requestSpecification)
+                .body(dto)
+                .post()
                 .then()
-                .statusCode(HttpStatus.OK.value())
+                .statusCode(HttpStatus.CREATED.value())
                 .extract()
                 .body()
-                .as(new TypeRef<List<TicketAdminDto>>() {
-                });
-        assertEquals(1, soldTickets.size());
-        boolean ticketIsSold = soldTickets.stream()
-                .anyMatch(t -> t.getId().equals(soldTicket.getId()) && t.getIsSold());
-        assertTrue(ticketIsSold);
+                .as(TicketDto.class);
+        assertEquals(ticket.getId(), soldTicket.getId());
+        assertEquals(ticket.getSession().getMovie().getName(), soldTicket.getMovieName());
+        assertEquals(ticket.getSession().getDateTime(), soldTicket.getDate());
+        assertEquals(expectedPlaceName, soldTicket.getPlaceName());
     }
 
     @Test
-    @DisplayName("Поиск всех проданных билетов без авторизации")
-    public void findSoldTicketsUnsuccessful() {
-        ErrorResponse expectedResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(),
-                "Нет прав доступа, авторизуйтесь как администратор");
+    @DisplayName("Покупка билета на несуществующий сеанс")
+    public void buyTicketUnsuccessful() {
+        TicketBookingDto dto = new TicketBookingDto(1, "A1");
+        ErrorResponse expectedResponse = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                "Билет на сеанс с id = 1 и место = A1 не найден"
+        );
         ErrorResponse response = RestAssured.given(requestSpecification)
-                .header("user-token", "randompassword")
-                .get("/saled")
+                .body(dto)
+                .post()
                 .then()
-                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                .statusCode(HttpStatus.NOT_FOUND.value())
                 .extract()
                 .body()
                 .as(ErrorResponse.class);
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getCode());
         assertEquals(expectedResponse, response);
     }
 }

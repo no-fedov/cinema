@@ -1,5 +1,7 @@
 package com.javaacademy.cinema.web;
 
+import com.javaacademy.cinema.config.AdminProperty;
+import com.javaacademy.cinema.controller.ErrorResponse;
 import com.javaacademy.cinema.dto.MovieAdminDto;
 import com.javaacademy.cinema.dto.SessionAdminDto;
 import com.javaacademy.cinema.dto.SessionCreateAdminDto;
@@ -15,7 +17,6 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import jakarta.annotation.PostConstruct;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,24 +34,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @AutoConfigureWebMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@Sql(scripts = "classpath:clear-db.sql")
 public class SessionAdminControllerTest {
-    private static final String INIT_MOVIE_SEQUENCE = """
-            select nextval('movie_id_seq');
-            """;
-    private static final String INIT_SESSION_SEQUENCE = """
-            select nextval('session_id_seq');
-            """;
-    private static final String CURRENT_VALUE_SESSION_SEQUENCE_QUERY = """
-            select currval('session_id_seq');
-            """;
-    private static final String CURRENT_VALUE_MOVIE_SEQUENCE_QUERY = """
-            select currval('movie_id_seq');
-            """;
+
     private static final int TICKET_COUNT_FOR_SESSION = 10;
     private static final LocalDateTime SESSION_TIME = LocalDateTime.of(
             2020,
             10,
-
             10,
             10,
             10
@@ -61,9 +51,6 @@ public class SessionAdminControllerTest {
     private RequestSpecification requestSpecification;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    @Autowired
     private MovieRepository movieRepository;
 
     @Autowired
@@ -72,11 +59,8 @@ public class SessionAdminControllerTest {
     @Autowired
     private TicketRepository ticketRepository;
 
-    @BeforeEach
-    public void initSequence() {
-        jdbcTemplate.execute(INIT_MOVIE_SEQUENCE);
-        jdbcTemplate.execute(INIT_SESSION_SEQUENCE);
-    }
+    @Autowired
+    private AdminProperty adminProperty;
 
     @PostConstruct
     public void initRestAssuredSpec() {
@@ -92,41 +76,67 @@ public class SessionAdminControllerTest {
     @DisplayName("Успешное создание сеанса и билетов на этот сеанс")
     public void createSessionSuccess() {
         Movie savedMovie = movieRepository.save(new Movie(null, "name", "description"));
-        Integer currentMovieId = savedMovie.getId();
-        Integer currentMovieIdDB = jdbcTemplate.queryForObject(CURRENT_VALUE_MOVIE_SEQUENCE_QUERY, Integer.class);
-        assertEquals(currentMovieIdDB, currentMovieId);
-        int maxSessionId = jdbcTemplate.queryForObject(CURRENT_VALUE_SESSION_SEQUENCE_QUERY, Integer.class);
         SessionAdminDto expectedSessionAdminDto = new SessionAdminDto(
-                maxSessionId + 1,
+                null,
                 new BigDecimal("1000"),
                 SESSION_TIME,
-                new MovieAdminDto(currentMovieId, "name", "description")
+                new MovieAdminDto(null, "name", "description")
         );
         Session expectedSession = new Session(
-                maxSessionId + 1,
+                null,
                 SESSION_TIME,
                 new BigDecimal("1000"),
                 savedMovie
         );
         SessionCreateAdminDto dto = new SessionCreateAdminDto(
-                currentMovieId,
+                savedMovie.getId(),
                 SESSION_TIME,
                 new BigDecimal("1000")
         );
         SessionAdminDto savedSessionAdminDto = RestAssured.given(requestSpecification)
                 .body(dto)
-                .header("user-token", "secretadmin123")
+                .header("user-token", adminProperty.getToken())
                 .post()
                 .then()
                 .statusCode(HttpStatus.CREATED.value())
                 .extract()
                 .body()
                 .as(SessionAdminDto.class);
-        assertEquals(expectedSessionAdminDto, savedSessionAdminDto);
-        Session savedSession = sessionRepository.findById(maxSessionId + 1).get();
-        assertEquals(expectedSession, savedSession);
-        int currentSessionId = savedSession.getId();
-        List<Ticket> tickets = ticketRepository.findBySessionId(currentSessionId, false);
+        assertEquals(expectedSessionAdminDto.getDateTime(), savedSessionAdminDto.getDateTime());
+        assertEquals(expectedSessionAdminDto.getPrice(), savedSessionAdminDto.getPrice());
+        assertEquals(expectedSessionAdminDto.getMovie().getName(), savedSessionAdminDto.getMovie().getName());
+        assertEquals(expectedSessionAdminDto.getMovie().getDescription(),
+                savedSessionAdminDto.getMovie().getDescription()
+        );
+        Session savedSession = sessionRepository.findById(savedSessionAdminDto.getId()).get();
+        assertEquals(expectedSession.getDateTime(), savedSession.getDateTime());
+        assertEquals(expectedSession.getPrice(), savedSession.getPrice());
+        assertEquals(expectedSession.getMovie().getDescription(), savedSession.getMovie().getDescription());
+        assertEquals(expectedSession.getMovie().getName(), savedSession.getMovie().getName());
+        List<Ticket> tickets = ticketRepository.findBySessionId(savedSessionAdminDto.getId(), false);
         assertEquals(TICKET_COUNT_FOR_SESSION, tickets.stream().filter(t -> !t.getIsSold()).count());
+    }
+
+    @Test
+    @DisplayName("Ошибка авторизации при попытке создания фильма")
+    public void createSessionUnsuccessful() {
+        ErrorResponse expectedResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(),
+                "Нет прав доступа, авторизуйтесь как администратор");
+        SessionCreateAdminDto sessionDto = new SessionCreateAdminDto(
+                1,
+                SESSION_TIME,
+                new BigDecimal("100")
+        );
+        ErrorResponse response = RestAssured.given(requestSpecification)
+                .body(sessionDto)
+                .header("user-token", "badpassword")
+                .post()
+                .then()
+                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                .extract()
+                .body()
+                .as(ErrorResponse.class);
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getCode());
+        assertEquals(expectedResponse, response);
     }
 }
