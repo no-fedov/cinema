@@ -136,7 +136,6 @@ public class SessionAdminControllerTest {
                 .extract()
                 .body()
                 .as(ErrorResponse.class);
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getCode());
         assertEquals(expectedResponse, response);
     }
 }
