@@ -24,12 +24,12 @@ public class TicketServiceImpl implements TicketService {
     private final TicketMapper ticketMapper;
 
     @Override
-    public TicketDto buyTicket(TicketBookingDto dto) {
+    public TicketDto buy(TicketBookingDto dto) {
         Optional<Place> currentPlace = placeRepository.findByName(dto.getPlaceName());
         if (currentPlace.isEmpty()) {
             throw new NotFoundEntityException("Места с именем = %s не найдено".formatted(dto.getPlaceName()));
         }
-        Optional<Ticket> ticket = ticketRepository.findIdBySessionByPlace(
+        Optional<Ticket> ticket = ticketRepository.findBySessionByPlace(
                 dto.getSessionId(),
                 currentPlace.get().getId()
         );

@@ -8,3 +8,6 @@ spring:
 app:
   admin:
     token: secretadmin123
+
+springdoc:
+  override-with-generic-response: false

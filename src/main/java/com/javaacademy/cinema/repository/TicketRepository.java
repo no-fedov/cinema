@@ -18,5 +18,5 @@ public interface TicketRepository {
 
     List<Ticket> findBySoldCondition(boolean isSold);
 
-    Optional<Ticket> findIdBySessionByPlace(Integer sessionId, Integer placeId);
+    Optional<Ticket> findBySessionByPlace(Integer sessionId, Integer placeId);
 }

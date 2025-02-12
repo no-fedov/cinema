@@ -5,5 +5,5 @@ import com.javaacademy.cinema.dto.TicketDto;
 
 public interface TicketService {
 
-    TicketDto buyTicket(TicketBookingDto dto);
+    TicketDto buy(TicketBookingDto dto);
 }

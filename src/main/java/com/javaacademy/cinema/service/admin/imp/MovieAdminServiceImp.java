@@ -19,7 +19,7 @@ public class MovieAdminServiceImp implements MovieAdminService {
     private final MovieMapper movieMapper;
 
     @Override
-    public MovieAdminDto createMovie(MovieCreateAdminDto dto) {
+    public MovieAdminDto create(MovieCreateAdminDto dto) {
         final Movie newMovie = movieMapper.mapToMovie(dto);
         movieRepository.save(newMovie);
         log.info("Сохранен фильм: {}", newMovie);

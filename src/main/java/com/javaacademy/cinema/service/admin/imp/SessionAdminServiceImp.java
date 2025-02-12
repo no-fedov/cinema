@@ -27,7 +27,7 @@ public class SessionAdminServiceImp implements SessionAdminService {
     private final SessionMapper sessionMapper;
 
     @Override
-    public SessionAdminDto createSession(SessionCreateAdminDto dto) {
+    public SessionAdminDto create(SessionCreateAdminDto dto) {
         Integer movieId = dto.getMovieId();
         Movie currentMovie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new NotFoundEntityException("Кино с id =%s не найдено".formatted(movieId)));

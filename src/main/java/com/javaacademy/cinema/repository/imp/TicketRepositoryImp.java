@@ -161,7 +161,7 @@ public class TicketRepositoryImp implements TicketRepository {
     }
 
     @Override
-    public Optional<Ticket> findIdBySessionByPlace(Integer sessionId, Integer placeId) {
+    public Optional<Ticket> findBySessionByPlace(Integer sessionId, Integer placeId) {
         Optional<Ticket> ticket = jdbcTemplate.query(
                 TICKET_ID_BY_SESSION_BY_PLACE,
                 this::mapToTicket,

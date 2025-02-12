@@ -95,7 +95,7 @@ public class SessionControllerTest {
     }
 
     @Test
-    @DisplayName("Поиск мсвободных мест для несуществующего сеанса")
+    @DisplayName("Поиск свободных мест для несуществующего сеанса")
     public void getFreeSeatsUnsuccessful() {
         ErrorResponse expectedResponse = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),

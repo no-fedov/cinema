@@ -67,7 +67,7 @@ public class TicketControllerTest {
     }
 
     @Test
-    @DisplayName("Упешная покупка билета")
+    @DisplayName("Успешная покупка билета")
     public void buyTicketSuccess() {
         Movie movie = movieRepository.save(new Movie(null, "name", "description"));
         Session session = sessionRepository.save(new Session(null, SESSION_TIME, new BigDecimal("100"), movie));
