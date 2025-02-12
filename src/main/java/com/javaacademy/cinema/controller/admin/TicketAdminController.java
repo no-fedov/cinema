@@ -1,7 +1,6 @@
 package com.javaacademy.cinema.controller.admin;
 
 import com.javaacademy.cinema.controller.ErrorResponse;
-import com.javaacademy.cinema.dto.SessionAdminDto;
 import com.javaacademy.cinema.dto.TicketAdminDto;
 import com.javaacademy.cinema.service.admin.TicketAdminService;
 import io.swagger.v3.oas.annotations.Operation;
