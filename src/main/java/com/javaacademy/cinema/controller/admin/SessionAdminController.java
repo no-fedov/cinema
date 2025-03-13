@@ -3,8 +3,9 @@ package com.javaacademy.cinema.controller.admin;
 import com.javaacademy.cinema.controller.ErrorResponse;
 import com.javaacademy.cinema.dto.SessionAdminDto;
 import com.javaacademy.cinema.dto.SessionCreateAdminDto;
-import com.javaacademy.cinema.service.admin.SessionAdminService;
-import com.javaacademy.cinema.service.admin.TicketAdminService;
+import com.javaacademy.cinema.service.AdminValidator;
+import com.javaacademy.cinema.service.SessionService;
+import com.javaacademy.cinema.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -50,8 +51,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class SessionAdminController {
 
     private final AdminValidator adminValidator;
-    private final SessionAdminService sessionAdminService;
-    private final TicketAdminService ticketAdminService;
+    private final SessionService sessionService;
+    private final TicketService ticketService;
 
     @Operation(
             summary = "Создает сеанс",
@@ -70,8 +71,8 @@ public class SessionAdminController {
     public SessionAdminDto createSession(@RequestHeader("user-token") String token,
                                          @RequestBody SessionCreateAdminDto dto) {
         adminValidator.valid(token);
-        SessionAdminDto session = sessionAdminService.create(dto);
-        ticketAdminService.createForSession(session);
+        SessionAdminDto session = sessionService.create(dto);
+        ticketService.createForSession(session);
         return session;
     }
 }

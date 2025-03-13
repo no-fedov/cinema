@@ -3,7 +3,7 @@ package com.javaacademy.cinema.controller.user;
 import com.javaacademy.cinema.controller.ErrorResponse;
 import com.javaacademy.cinema.dto.TicketBookingDto;
 import com.javaacademy.cinema.dto.TicketDto;
-import com.javaacademy.cinema.service.user.TicketService;
+import com.javaacademy.cinema.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

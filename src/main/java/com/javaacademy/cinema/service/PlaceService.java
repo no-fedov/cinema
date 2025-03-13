@@ -1,4 +1,4 @@
-package com.javaacademy.cinema.service.user;
+package com.javaacademy.cinema.service;
 
 import com.javaacademy.cinema.dto.PlaceDto;
 

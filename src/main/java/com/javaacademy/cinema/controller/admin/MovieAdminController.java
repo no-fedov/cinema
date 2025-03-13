@@ -3,7 +3,8 @@ package com.javaacademy.cinema.controller.admin;
 import com.javaacademy.cinema.controller.ErrorResponse;
 import com.javaacademy.cinema.dto.MovieAdminDto;
 import com.javaacademy.cinema.dto.MovieCreateAdminDto;
-import com.javaacademy.cinema.service.admin.MovieAdminService;
+import com.javaacademy.cinema.service.AdminValidator;
+import com.javaacademy.cinema.service.MovieService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -49,7 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MovieAdminController {
 
     private final AdminValidator adminValidator;
-    private final MovieAdminService movieAdminService;
+    private final MovieService movieService;
 
     @Operation(
             summary = "Создает фильм",
@@ -68,7 +69,7 @@ public class MovieAdminController {
     public MovieAdminDto createMovie(@RequestHeader("user-token") String token,
                                      @RequestBody MovieCreateAdminDto dto) {
         adminValidator.valid(token);
-        MovieAdminDto movie = movieAdminService.create(dto);
+        MovieAdminDto movie = movieService.create(dto);
         return movie;
     }
 }

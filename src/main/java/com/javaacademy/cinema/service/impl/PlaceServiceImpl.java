@@ -1,4 +1,4 @@
-package com.javaacademy.cinema.service.user.imp;
+package com.javaacademy.cinema.service.impl;
 
 import com.javaacademy.cinema.dto.PlaceDto;
 import com.javaacademy.cinema.entity.Place;
@@ -6,7 +6,7 @@ import com.javaacademy.cinema.exception.NotFoundEntityException;
 import com.javaacademy.cinema.mapper.PlaceMapper;
 import com.javaacademy.cinema.repository.PlaceRepository;
 import com.javaacademy.cinema.repository.SessionRepository;
-import com.javaacademy.cinema.service.user.PlaceService;
+import com.javaacademy.cinema.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

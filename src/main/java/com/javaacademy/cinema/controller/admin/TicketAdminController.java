@@ -2,7 +2,8 @@ package com.javaacademy.cinema.controller.admin;
 
 import com.javaacademy.cinema.controller.ErrorResponse;
 import com.javaacademy.cinema.dto.TicketAdminDto;
-import com.javaacademy.cinema.service.admin.TicketAdminService;
+import com.javaacademy.cinema.service.AdminValidator;
+import com.javaacademy.cinema.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -52,7 +53,7 @@ import static java.lang.Boolean.TRUE;
 public class TicketAdminController {
 
     private final AdminValidator adminValidator;
-    private final TicketAdminService ticketAdminService;
+    private final TicketService ticketService;
 
     @Operation(
             summary = "Возвращает все купленные билеты",
@@ -71,7 +72,7 @@ public class TicketAdminController {
     @GetMapping("/saled")
     public List<TicketAdminDto> soldTickets(@RequestHeader("user-token") String token) {
         adminValidator.valid(token);
-        List<TicketAdminDto> soldTickets = ticketAdminService.getBySoldCondition(TRUE);
+        List<TicketAdminDto> soldTickets = ticketService.getBySoldCondition(TRUE);
         log.info("Найдены все проданные билеты: {}", soldTickets);
         return soldTickets;
     }

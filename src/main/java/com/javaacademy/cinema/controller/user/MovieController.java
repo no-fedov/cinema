@@ -2,7 +2,7 @@ package com.javaacademy.cinema.controller.user;
 
 import com.javaacademy.cinema.controller.ErrorResponse;
 import com.javaacademy.cinema.dto.MovieDto;
-import com.javaacademy.cinema.service.user.MovieService;
+import com.javaacademy.cinema.service.MovieService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;

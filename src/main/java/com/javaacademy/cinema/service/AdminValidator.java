@@ -1,4 +1,4 @@
-package com.javaacademy.cinema.controller.admin;
+package com.javaacademy.cinema.service;
 
 import com.javaacademy.cinema.config.AdminProperty;
 import com.javaacademy.cinema.exception.AuthenticationException;
