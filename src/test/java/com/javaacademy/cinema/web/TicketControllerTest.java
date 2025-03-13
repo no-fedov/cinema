@@ -15,11 +15,9 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
-import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -42,10 +40,11 @@ public class TicketControllerTest {
             10,
             10);
 
-    private RequestSpecification requestSpecification;
-
-    @Value("${server.port}")
-    int port;
+    private final RequestSpecification requestSpecification = new RequestSpecBuilder()
+                .setBasePath("/ticket/booking")
+                .setContentType(ContentType.JSON)
+                .log(LogDetail.ALL)
+                .build();
 
     @Autowired
     private MovieRepository movieRepository;
@@ -55,16 +54,6 @@ public class TicketControllerTest {
 
     @Autowired
     private TicketRepository ticketRepository;
-
-    @PostConstruct
-    public void initRestAssuredSpec() {
-        requestSpecification = new RequestSpecBuilder()
-                .setPort(port)
-                .setBasePath("/ticket/booking")
-                .setContentType(ContentType.JSON)
-                .log(LogDetail.ALL)
-                .build();
-    }
 
     @Test
     @DisplayName("Успешная покупка билета")

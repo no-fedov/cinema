@@ -11,11 +11,9 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
-import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -29,26 +27,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Sql(scripts = "classpath:clear-db.sql")
 public class MovieAdminControllerTest {
 
-    private RequestSpecification requestSpecification;
-
-    @Value("${server.port}")
-    int port;
+    private final RequestSpecification requestSpecification = new RequestSpecBuilder()
+                .setBasePath("/movie")
+                .setContentType(ContentType.JSON)
+                .log(LogDetail.ALL)
+                .build();
 
     @Autowired
     private MovieRepository movieRepository;
 
     @Autowired
     private AdminProperty adminProperty;
-
-    @PostConstruct
-    public void initRestAssuredSpec() {
-        requestSpecification = new RequestSpecBuilder()
-                .setPort(port)
-                .setBasePath("/movie")
-                .setContentType(ContentType.JSON)
-                .log(LogDetail.ALL)
-                .build();
-    }
 
     @Test
     @DisplayName("Успешное создание фильма")
@@ -71,7 +60,7 @@ public class MovieAdminControllerTest {
         assertEquals(expectedMovieAdminDto.getDescription(), responseMovieAdminDto.getDescription());
         assertEquals(expectedMovieAdminDto.getName(), responseMovieAdminDto.getName());
         assertNotNull(responseMovieAdminDto.getId());
-        Movie savedMovie = movieRepository.findById(responseMovieAdminDto.getId()).get();
+        Movie savedMovie = movieRepository.findById(responseMovieAdminDto.getId()).orElseThrow();
         assertEquals(dto.getName(), savedMovie.getName());
         assertEquals(dto.getDescription(), savedMovie.getDescription());
     }

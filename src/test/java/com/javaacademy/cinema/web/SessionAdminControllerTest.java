@@ -16,11 +16,9 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
-import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -45,10 +43,12 @@ public class SessionAdminControllerTest {
             10,
             10
     );
-    @Value("${server.port}")
-    int port;
 
-    private RequestSpecification requestSpecification;
+    private final RequestSpecification requestSpecification  = new RequestSpecBuilder()
+            .setBasePath("/session")
+            .setContentType(ContentType.JSON)
+            .log(LogDetail.ALL)
+            .build();;
 
     @Autowired
     private MovieRepository movieRepository;
@@ -61,16 +61,6 @@ public class SessionAdminControllerTest {
 
     @Autowired
     private AdminProperty adminProperty;
-
-    @PostConstruct
-    public void initRestAssuredSpec() {
-        requestSpecification = new RequestSpecBuilder()
-                .setPort(port)
-                .setBasePath("/session")
-                .setContentType(ContentType.JSON)
-                .log(LogDetail.ALL)
-                .build();
-    }
 
     @Test
     @DisplayName("Успешное создание сеанса и билетов на этот сеанс")
@@ -108,7 +98,7 @@ public class SessionAdminControllerTest {
         assertEquals(expectedSessionAdminDto.getMovie().getDescription(),
                 savedSessionAdminDto.getMovie().getDescription()
         );
-        Session savedSession = sessionRepository.findById(savedSessionAdminDto.getId()).get();
+        Session savedSession = sessionRepository.findById(savedSessionAdminDto.getId()).orElseThrow();
         assertEquals(expectedSession.getDateTime(), savedSession.getDateTime());
         assertEquals(expectedSession.getPrice(), savedSession.getPrice());
         assertEquals(expectedSession.getMovie().getDescription(), savedSession.getMovie().getDescription());
